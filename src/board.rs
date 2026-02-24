@@ -4,6 +4,7 @@ use ratatui::{
 };
 
 type Cell = Option<i32>;
+
 type Row = [Cell; 4];
 
 #[derive(Default, Clone)]
@@ -21,6 +22,9 @@ pub enum Movement {
 impl Board {
     pub fn set_cell(&mut self, cell_value: Cell, x: usize, y: usize) {
         self.state[x][y] = cell_value;
+    }
+    pub fn get_score(&self) -> i32 {
+        self.state.iter().flatten().flatten().sum()
     }
     pub fn move_board(&mut self, movement: Movement) {
         for col_index in 0..4 {
@@ -87,6 +91,17 @@ mod tests {
         board.set_cell(Some(1), 1, 0);
 
         assert_eq!(board.state[1][0], Some(1));
+    }
+
+    #[test]
+    fn tets_score() {
+        let mut board = Board::default();
+        assert_eq!(board.get_score(), 0);
+
+        board.set_cell(Some(2), 0, 0);
+        assert_eq!(board.get_score(), 2);
+        board.set_cell(Some(2), 0, 1);
+        assert_eq!(board.get_score(), 4);
     }
 
     #[test]
