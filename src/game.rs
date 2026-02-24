@@ -3,6 +3,8 @@ use ratatui::{
     widgets::{Block, Paragraph, Widget},
 };
 
+use crate::score::Score;
+
 type Cell = Option<i32>;
 
 type Row = [Cell; 4];
@@ -10,6 +12,7 @@ type Row = [Cell; 4];
 #[derive(Default, Clone)]
 pub struct Board {
     state: [Row; 4],
+    pub score: Score,
 }
 
 pub enum Movement {
@@ -23,9 +26,17 @@ impl Board {
     pub fn set_cell(&mut self, cell_value: Cell, x: usize, y: usize) {
         self.state[x][y] = cell_value;
     }
-    pub fn get_score(&self) -> i32 {
+
+    fn get_score(&self) -> i32 {
         self.state.iter().flatten().flatten().sum()
     }
+
+    pub fn update_score(&mut self) {
+        self.score = Score {
+            value: self.get_score(),
+        };
+    }
+
     pub fn move_board(&mut self, movement: Movement) {
         for col_index in 0..4 {
             let (mut destination_cursor, mut iterator_index): (usize, isize) = match movement {
@@ -77,6 +88,33 @@ impl Board {
                     Movement::Down | Movement::Right => iterator_index -= 1,
                 };
             }
+        }
+    }
+}
+
+impl Widget for &Board {
+    fn render(self, area: ratatui::prelude::Rect, buf: &mut ratatui::prelude::Buffer)
+    where
+        Self: Sized,
+    {
+        let col_constraints = (0..4).map(|_| Constraint::Length(8));
+        let row_constraints = (0..4).map(|_| Constraint::Length(4));
+        let horizontal = Layout::horizontal(col_constraints).spacing(1);
+        let vertical = Layout::vertical(row_constraints).spacing(1);
+
+        let rows = vertical.split(area);
+        let cells = rows.iter().flat_map(|&row| horizontal.split(row).to_vec());
+
+        for (i, cell) in cells.enumerate() {
+            let x = i / 4;
+            let y = i % 4;
+            Paragraph::new(
+                self.state[x][y]
+                    .map(|v| v.to_string())
+                    .unwrap_or("".to_string()),
+            )
+            .block(Block::bordered())
+            .render(cell, buf);
         }
     }
 }
@@ -219,26 +257,5 @@ mod tests {
         assert_eq!(board3.state[0][1], Some(4), "second column should equal 4");
         assert_eq!(board3.state[0][2], None, "third column should be empty");
         assert_eq!(board3.state[0][3], None, "fourth column should be empty");
-    }
-}
-
-impl Widget for Board {
-    fn render(self, area: ratatui::prelude::Rect, buf: &mut ratatui::prelude::Buffer)
-    where
-        Self: Sized,
-    {
-        let col_constraints = (0..4).map(|_| Constraint::Length(8));
-        let row_constraints = (0..4).map(|_| Constraint::Length(4));
-        let horizontal = Layout::horizontal(col_constraints).spacing(1);
-        let vertical = Layout::vertical(row_constraints).spacing(1);
-
-        let rows = vertical.split(area);
-        let cells = rows.iter().flat_map(|&row| horizontal.split(row).to_vec());
-
-        for (i, cell) in cells.enumerate() {
-            Paragraph::new(format!("{}", i))
-                .block(Block::bordered())
-                .render(cell, buf);
-        }
     }
 }

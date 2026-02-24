@@ -1,6 +1,7 @@
-mod board;
+mod game;
+mod score;
 
-use crate::board::{Board, Movement};
+use crate::game::{Board, Movement};
 use crossterm::event::{self, Event, KeyCode};
 use ratatui::{
     DefaultTerminal, Frame,
@@ -48,7 +49,8 @@ impl App {
             .constraints(vec![Constraint::Percentage(50), Constraint::Min(1)])
             .split(frame.area());
 
-        frame.render_widget(self.board.clone(), layout[0]);
+        frame.render_widget(&self.board, layout[0]);
+        frame.render_widget(&self.board.score, layout[1]);
     }
 
     fn handle_key(&mut self, key: event::KeyEvent, _event: Event) -> Option<AppEvent> {
@@ -65,7 +67,10 @@ impl App {
     fn handle_event(&mut self, app_event: AppEvent) -> Option<AppEvent> {
         match app_event {
             AppEvent::Quit => self.should_quit = true,
-            AppEvent::MoveBoard(movement) => self.board.move_board(movement),
+            AppEvent::MoveBoard(movement) => {
+                self.board.move_board(movement);
+                self.board.update_score();
+            }
         }
         None
     }
