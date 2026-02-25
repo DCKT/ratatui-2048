@@ -70,6 +70,12 @@ impl App {
             AppEvent::MoveBoard(movement) => {
                 self.board.move_board(movement);
                 self.board.update_score();
+                match self.board.spawn_random_cell() {
+                    Ok(_) => (),
+                    Err(_) => {
+                        // check if board is movable; else game over
+                    }
+                }
             }
         }
         None

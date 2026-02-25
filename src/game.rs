@@ -1,3 +1,4 @@
+use rand::seq::IndexedRandom;
 use ratatui::{
     layout::{Constraint, Layout},
     widgets::{Block, Paragraph, Widget},
@@ -8,6 +9,11 @@ use crate::score::Score;
 type Cell = Option<i32>;
 
 type Row = [Cell; 4];
+
+pub struct Coordinates {
+    pub x: usize,
+    pub y: usize,
+}
 
 #[derive(Default, Clone)]
 pub struct Board {
@@ -35,6 +41,30 @@ impl Board {
         self.score = Score {
             value: self.get_score(),
         };
+    }
+
+    fn get_empty_cells(&self) -> Vec<Coordinates> {
+        let mut empty_cells: Vec<Coordinates> = vec![];
+
+        for x in 0..4 {
+            for y in 0..4 {
+                if self.state[x][y].is_none() {
+                    empty_cells.push(Coordinates { x, y });
+                }
+            }
+        }
+
+        empty_cells
+    }
+
+    pub fn spawn_random_cell(&mut self) -> Result<(), ()> {
+        if let Some(random_cell) = self.get_empty_cells().choose(&mut rand::rng()) {
+            let new_cell_value = if rand::random::<f32>() < 0.9 { 2 } else { 4 };
+            self.state[random_cell.x][random_cell.y] = Some(new_cell_value);
+            Ok(())
+        } else {
+            Err(())
+        }
     }
 
     pub fn move_board(&mut self, movement: Movement) {
