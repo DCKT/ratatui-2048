@@ -58,30 +58,33 @@ impl App {
 
         let sub_layout = Layout::default()
             .direction(Direction::Vertical)
-            .constraints([Constraint::Max(4), Constraint::Max(4)])
+            .constraints([Constraint::Max(4), Constraint::Max(4), Constraint::Max(4)])
             .spacing(1)
             .split(layout[1]);
 
         frame.render_widget(&self.board, layout[0]);
         frame.render_widget(&self.board.score, sub_layout[0]);
 
+        frame.render_widget(
+            Paragraph::new(vec![
+                Line::from(vec![
+                    "Press ".into(),
+                    "r".bold().yellow(),
+                    " to play reset the game".into(),
+                ]),
+                "or".bold().into(),
+                Line::from(vec![
+                    "Press ".into(),
+                    "q".bold().yellow(),
+                    " to quit".into(),
+                ]),
+            ]),
+            sub_layout[1],
+        );
         if self.game_over {
             frame.render_widget(
-                Paragraph::new(vec![
-                    "GAME OVER".bold().red().into(),
-                    Line::from(vec![
-                        "Press ".into(),
-                        "r".bold().yellow(),
-                        " to play a new game ".into(),
-                    ]),
-                    "or".bold().into(),
-                    Line::from(vec![
-                        "Press ".into(),
-                        "q".bold().yellow(),
-                        " to quit".into(),
-                    ]),
-                ]),
-                sub_layout[1],
+                Paragraph::new(vec!["GAME OVER".bold().red().into()]),
+                sub_layout[2],
             );
         }
     }
