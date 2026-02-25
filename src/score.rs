@@ -1,4 +1,7 @@
-use ratatui::widgets::{Block, BorderType, Borders, Paragraph, Widget};
+use ratatui::{
+    style::Stylize,
+    widgets::{Block, BorderType, Borders, Paragraph, Widget},
+};
 
 #[derive(Default, Clone)]
 pub struct Score {
@@ -11,6 +14,8 @@ impl Widget for &Score {
         Self: Sized,
     {
         Paragraph::new(format!("{}", self.value))
+            .bold()
+            .yellow()
             .block(
                 Block::default()
                     .title("Score")

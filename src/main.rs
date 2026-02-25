@@ -5,7 +5,10 @@ use crate::game::{Board, Movement};
 use crossterm::event::{self, Event, KeyCode};
 use ratatui::{
     DefaultTerminal, Frame,
-    layout::{Constraint, Layout},
+    layout::{Constraint, Direction, Layout},
+    style::Stylize,
+    text::Line,
+    widgets::Paragraph,
 };
 
 #[derive(Default)]
@@ -17,6 +20,7 @@ struct App {
 
 fn main() -> color_eyre::Result<()> {
     let mut app = App::default();
+    let _ = app.board.spawn_random_cell();
     color_eyre::install()?;
     ratatui::run(|t| app.run(t))?;
     Ok(())
@@ -25,6 +29,7 @@ fn main() -> color_eyre::Result<()> {
 enum AppEvent {
     GameOver,
     MoveBoard(Movement),
+    RestartGame,
     Quit,
 }
 
@@ -51,8 +56,34 @@ impl App {
             .constraints(vec![Constraint::Percentage(50), Constraint::Min(1)])
             .split(frame.area());
 
+        let sub_layout = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([Constraint::Max(4), Constraint::Max(4)])
+            .spacing(1)
+            .split(layout[1]);
+
         frame.render_widget(&self.board, layout[0]);
-        frame.render_widget(&self.board.score, layout[1]);
+        frame.render_widget(&self.board.score, sub_layout[0]);
+
+        if self.game_over {
+            frame.render_widget(
+                Paragraph::new(vec![
+                    "GAME OVER".bold().red().into(),
+                    Line::from(vec![
+                        "Press ".into(),
+                        "r".bold().yellow(),
+                        " to play a new game ".into(),
+                    ]),
+                    "or".bold().into(),
+                    Line::from(vec![
+                        "Press ".into(),
+                        "q".bold().yellow(),
+                        " to quit".into(),
+                    ]),
+                ]),
+                sub_layout[1],
+            );
+        }
     }
 
     fn handle_key(&mut self, key: event::KeyEvent, _event: Event) -> Option<AppEvent> {
@@ -62,6 +93,7 @@ impl App {
             KeyCode::Char('k') | KeyCode::Up => Some(AppEvent::MoveBoard(Movement::Up)),
             KeyCode::Char('h') | KeyCode::Left => Some(AppEvent::MoveBoard(Movement::Left)),
             KeyCode::Char('l') | KeyCode::Right => Some(AppEvent::MoveBoard(Movement::Right)),
+            KeyCode::Char('r') => Some(AppEvent::RestartGame),
             _ => None,
         }
     }
@@ -70,6 +102,10 @@ impl App {
         match app_event {
             AppEvent::GameOver => self.game_over = true,
             AppEvent::Quit => self.should_quit = true,
+            AppEvent::RestartGame => {
+                self.board = Board::default();
+                let _ = self.board.spawn_random_cell();
+            }
             AppEvent::MoveBoard(movement) => {
                 let board_has_changed = self.board.move_board(movement);
                 if board_has_changed {
@@ -77,14 +113,13 @@ impl App {
                     match self.board.spawn_random_cell() {
                         Ok(_) => (),
                         Err(_) => {
-                            // check if board is movable; else game over
-                            let is_board_movable = self.board.is_board_movable();
-
-                            if !is_board_movable {
+                            if !self.board.is_board_movable() {
                                 return Some(AppEvent::GameOver);
                             }
                         }
                     }
+                } else if !self.board.is_board_movable() {
+                    return Some(AppEvent::GameOver);
                 }
             }
         }

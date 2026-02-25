@@ -1,6 +1,7 @@
 use rand::seq::IndexedRandom;
 use ratatui::{
     layout::{Constraint, Layout},
+    style::{Color, Style},
     widgets::{Block, Paragraph, Widget},
 };
 
@@ -56,6 +57,29 @@ impl Board {
         }
 
         empty_cells
+    }
+
+    fn get_cell_style(&self, x: usize, y: usize) -> Style {
+        let dark_text = Color::Rgb(119, 110, 101);
+        let light_text = Color::Rgb(249, 246, 242);
+
+        self.state[x][y].map_or(Style::default(), |value| {
+            let (bg, fg) = match value {
+                2 => (Color::Rgb(238, 228, 218), dark_text),
+                4 => (Color::Rgb(237, 224, 200), dark_text),
+                8 => (Color::Rgb(242, 177, 121), light_text),
+                16 => (Color::Rgb(245, 149, 99), light_text),
+                32 => (Color::Rgb(246, 124, 95), light_text),
+                64 => (Color::Rgb(246, 94, 59), light_text),
+                128 => (Color::Rgb(237, 207, 114), light_text),
+                256 => (Color::Rgb(237, 204, 97), light_text),
+                512 => (Color::Rgb(237, 200, 80), light_text),
+                1024 => (Color::Rgb(237, 197, 63), light_text),
+                2048 => (Color::Rgb(237, 194, 46), light_text),
+                _ => (Color::Rgb(0, 0, 0), light_text), // > 2048
+            };
+            Style::default().bg(bg).fg(fg)
+        })
     }
 
     pub fn spawn_random_cell(&mut self) -> Result<(), ()> {
@@ -163,6 +187,7 @@ impl Widget for &Board {
                     .map(|v| v.to_string())
                     .unwrap_or("".to_string()),
             )
+            .style(self.get_cell_style(x, y))
             .block(Block::bordered())
             .render(cell, buf);
         }
