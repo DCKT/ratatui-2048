@@ -21,6 +21,7 @@ pub struct Board {
     pub score: Score,
 }
 
+#[derive(Clone)]
 pub enum Movement {
     Up,
     Down,
@@ -67,7 +68,22 @@ impl Board {
         }
     }
 
-    pub fn move_board(&mut self, movement: Movement) {
+    pub fn is_board_movable(&mut self) -> bool {
+        let mut board = self.clone();
+
+        [
+            Movement::Up,
+            Movement::Left,
+            Movement::Down,
+            Movement::Right,
+        ]
+        .iter()
+        .any(|m| board.move_board(m.clone()))
+    }
+
+    pub fn move_board(&mut self, movement: Movement) -> bool {
+        let mut has_changed = false;
+
         for col_index in 0..4 {
             let (mut destination_cursor, mut iterator_index): (usize, isize) = match movement {
                 Movement::Up | Movement::Left => (0, 0),
@@ -92,11 +108,13 @@ impl Board {
                         (None, Some(o)) => {
                             self.set_cell(Some(o), current_x, current_y);
                             self.set_cell(None, next_x, next_y);
+                            has_changed = true;
                         }
                         (Some(d), Some(o)) => {
                             if d == o {
                                 self.set_cell(Some(d + o), current_x, current_y);
                                 self.set_cell(None, next_x, next_y);
+                                has_changed = true;
 
                                 match movement {
                                     Movement::Up | Movement::Left => destination_cursor += 1,
@@ -119,6 +137,8 @@ impl Board {
                 };
             }
         }
+
+        has_changed
     }
 }
 
@@ -287,5 +307,25 @@ mod tests {
         assert_eq!(board3.state[0][1], Some(4), "second column should equal 4");
         assert_eq!(board3.state[0][2], None, "third column should be empty");
         assert_eq!(board3.state[0][3], None, "fourth column should be empty");
+    }
+
+    #[test]
+    fn test_board_is_movable() {
+        let mut board = Board::default();
+        for x in 0..4 {
+            for y in 0..4 {
+                board.set_cell(Some(x + y), x as usize, y as usize);
+            }
+        }
+        assert!(
+            !board.is_board_movable(),
+            "board is full and can't be updated"
+        );
+        for x in 0..4 {
+            for y in 0..4 {
+                board.set_cell(Some(2), x as usize, y as usize);
+            }
+        }
+        assert!(board.is_board_movable(), "board is full but can be updated");
     }
 }
