@@ -1,3 +1,10 @@
+#[cfg(feature = "web")]
+use ratzilla::ratatui::{
+    style::Stylize,
+    widgets::{Block, BorderType, Borders, Paragraph, Widget},
+};
+
+#[cfg(not(feature = "web"))]
 use ratatui::{
     style::Stylize,
     widgets::{Block, BorderType, Borders, Paragraph, Widget},

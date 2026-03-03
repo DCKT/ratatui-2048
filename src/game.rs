@@ -1,8 +1,17 @@
 use rand::seq::IndexedRandom;
+
+#[cfg(feature = "web")]
+use ratzilla::ratatui::{
+    layout::{Constraint, Layout},
+    style::{Color, Style, Stylize},
+    widgets::{Block, BorderType, Paragraph, Widget},
+};
+
+#[cfg(not(feature = "web"))]
 use ratatui::{
     layout::{Constraint, Layout},
-    style::{Color, Style},
-    widgets::{Block, Paragraph, Widget},
+    style::{Color, Style, Stylize},
+    widgets::{Block, BorderType, Paragraph, Widget},
 };
 
 use crate::score::Score;
@@ -187,8 +196,12 @@ impl Widget for &Board {
                     .map(|v| v.to_string())
                     .unwrap_or("".to_string()),
             )
-            .style(self.get_cell_style(x, y))
-            .block(Block::bordered())
+            .bold()
+            .block(
+                Block::bordered()
+                    .border_type(BorderType::Rounded)
+                    .style(self.get_cell_style(x, y)),
+            )
             .render(cell, buf);
         }
     }
