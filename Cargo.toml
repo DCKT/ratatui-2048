@@ -12,7 +12,12 @@ terminal = ["dep:crossterm", "dep:color-eyre", "ratatui/crossterm"]
 web = ["dep:ratzilla", "dep:getrandom"]
 
 [dependencies]
-ratatui = { version = "0.30.0", default-features = false, features = ["underline-color", "all-widgets", "macros", "layout-cache"] }
+ratatui = { version = "0.30.0", default-features = false, features = [
+  "underline-color",
+  "all-widgets",
+  "macros",
+  "layout-cache",
+] }
 rand = "0.10.0"
 
 # Terminal-only
@@ -29,3 +34,6 @@ codegen-units = 1
 lto = true
 opt-level = "s"
 strip = true
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-O", "--enable-bulk-memory"]

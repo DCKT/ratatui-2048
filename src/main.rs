@@ -9,9 +9,9 @@ use crossterm::event::{self, Event, KeyCode};
 use ratatui::DefaultTerminal;
 
 #[cfg(feature = "web")]
-use std::{cell::RefCell, rc::Rc};
-#[cfg(feature = "web")]
 use ratzilla::{DomBackend, WebRenderer, event::KeyCode};
+#[cfg(feature = "web")]
+use std::{cell::RefCell, rc::Rc};
 
 use ratatui::{
     Frame,
