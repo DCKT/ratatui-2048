@@ -1,7 +1,0 @@
-[build]
-filehash = true
-
-# Disable wasm-opt to avoid bulk-memory feature mismatch.
-# Rust's LTO in profile.release already optimizes the binary.
-[tools]
-wasm_opt = "off"
