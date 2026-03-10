@@ -36,7 +36,7 @@ jobs:
         run: trunk build --release --public-url /ratatui-2048/
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: dist
 
